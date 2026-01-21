@@ -24,7 +24,7 @@ LABEL_MAPPING = {
     "Jubilaciones y pensiones de la Seguridad Social": "Jubilaciones",
     "Montepios y pensiones de orfandad": "Montepíos y orfandad",
     "Transferencias de asistencia social (excluidas las transferencias sociales en especie)": "Asistencia social",
-    "Transferencias corrientes recibidas de instituciones sin fines de lucro  (iglesias, fundaciones)": "Inst. sin fines lucro",
+    "Transferencias corrientes recibidas de instituciones sin fines de lucro (iglesias, fundaciones)": "Inst sin fines lucro",
     "Transferencias corrientes recibidas de otros hogares": "Remesas y otros hogares",
     "Primas por seguros": "Seguros",
     "Transferencias sociales en especie (TRSE) recibidas": "TRSE recibidas",
@@ -39,8 +39,12 @@ df_raw = pd.read_csv('datos/Variables-pais-componente.csv')
 
 # Clean columns and strings
 df_raw.columns = df_raw.columns.str.strip()
-df_raw['Fuente de ingreso'] = df_raw['Fuente de ingreso'].str.strip()
-df_raw['concepto_canberra_definitivo'] = df_raw['concepto_canberra_definitivo'].str.strip()
+
+# Normalize whitespace in all string columns (replace \xa0 with space and strip)
+for col in ['Fuente de ingreso', 'concepto_canberra_definitivo']:
+    df_raw[col] = df_raw[col].str.replace('\xa0', ' ', regex=True).str.strip()
+    # Collapse multiple spaces into one to be super robust
+    df_raw[col] = df_raw[col].str.replace(r'\s+', ' ', regex=True)
 
 # Apply label mapping
 df_raw['label_short'] = df_raw['concepto_canberra_definitivo'].map(lambda x: LABEL_MAPPING.get(x, x))
